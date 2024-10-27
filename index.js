@@ -12,12 +12,12 @@ const app = express();
 
 app.use(incomingRequestLogger);
 
-app.use(bodyParser.json(
-  urlencoded: true,
-));
+app.use(bodyParser.json());
 
-app.use('/api', indexRouter);
-app.use('/api/user', userRouter);
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use('/api/v1', indexRouter);
+app.use('/api/v1/user', userRouter);
 
 app.listen(process.env.PORT, () => {
   console.log('Server is running on port 3000');

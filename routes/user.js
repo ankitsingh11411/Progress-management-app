@@ -1,24 +1,53 @@
 const express = require('express');
 const router = express.Router();
-const { User } = require('../schema/user.schema');
+const { User } = require('../schema/user.schema.js');
 const bcrypt = require('bcrypt');
-const jsonwebtoken = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+const { checkSchema, check } = require('express-validator');
+dotenv.config();
 
 router.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
-  console.log(name, email, password);
-  const ifUserExists = await User.findOne({ email: email });
+
+  const ifUserExists = await User.findOne({ email });
   if (ifUserExists) {
-    return res.status(409).json({ message: 'User already exists' });
+    return res.status(400).json({ message: 'User already exists' });
   }
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({
-    name,
-    email,
-    password: hashedPassword,
-  });
+  const user = new User({ name, email, password: hashedPassword });
   await user.save();
   res.status(201).json({ message: 'User created successfully' });
+});
+
+router.get('/', async (req, res) => {
+  const users = await User.find().select('-password -_id');
+  res.status(200).json(users);
+});
+
+router.get('/:email', async (req, res) => {
+  const { email } = req.params;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  res.status(200).json(user);
+});
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: 'wrong email or password' });
+  }
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: 'Invalid email or password' });
+  }
+  const payload = { id: user._id };
+  const token = jwt.sign(payload, process.env.JWT_SECRET);
+
+  res.status(200).json({ token });
 });
 
 module.exports = router;
