@@ -2,23 +2,27 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const { incomingRequestLogger } = require('./middleware/index.js');
+const indexRouter = require('./routes/index.js');
 dotenv.config();
 const fs = require('fs');
+const userRouter = require('./routes/user.js');
 
 const app = express();
 
-app.use((req, res, next) => {
-  fs.appendFileSync(
-    'log.txt',
-    req.method + ' ' + req.url + new Date().toISOString() + '\n'
-  );
-  next();
-});
+app.use(incomingRequestLogger);
 
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
+app.use(bodyParser.json(
+  urlencoded: true,
+));
+
+app.use('/api', indexRouter);
+app.use('/api/user', userRouter);
 
 app.listen(process.env.PORT, () => {
   console.log('Server is running on port 3000');
+  mongoose.connect(process.env.MONGOOSE_URI_STRING, {});
+  mongoose.connection.on('error', (err) => {
+    console.log(err);
+  });
 });
