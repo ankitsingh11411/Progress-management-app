@@ -10,14 +10,27 @@ dotenv.config();
 router.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
 
-  const ifUserExists = await User.findOne({ email });
-  if (ifUserExists) {
-    return res.status(400).json({ message: 'User already exists' });
+  if (!name || !email || !password) {
+    return res
+      .status(400)
+      .json({ message: 'Name, email, and password are required' });
   }
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({ name, email, password: hashedPassword });
-  await user.save();
-  res.status(201).json({ message: 'User created successfully' });
+
+  try {
+    const ifUserExists = await User.findOne({ email });
+    if (ifUserExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ name, email, password: hashedPassword });
+    await user.save();
+
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 router.get('/', async (req, res) => {

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { User } = require('../schema/user.schema.js');
 
 const taskSchema = new Schema({
   taskname: {
@@ -12,14 +13,13 @@ const taskSchema = new Schema({
     enum: ['HIGH PRIORITY', 'MEDIUM PRIORITY', 'LOW PRIORITY'],
   },
   checklists: {
-    type: [String],
+    type: [Array],
     required: true,
-    validate: {
-      validator: function (value) {
-        return value && value.length > 0;
-      },
-      message: 'At least one checklist item is required',
-    },
+  },
+  creator: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true,
   },
 });
 
