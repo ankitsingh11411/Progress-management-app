@@ -9,6 +9,7 @@
   "author": "ASR",
   "license": "ISC",
   "dependencies": {
+    "@types/express": "^5.0.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "dotenv": "^16.4.5",
@@ -16,6 +17,8 @@
     "express-validator": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.2",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "zod": "^3.23.8",
+    "zod-express-middleware": "^1.4.0"
   }
 }

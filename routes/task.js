@@ -3,6 +3,8 @@ const router = express.Router();
 const { Task } = require('../schema/task.schema.js');
 const authmiddleware = require('../middleware/auth.js');
 const isAuth = require('../utils/index.js');
+const { z } = require('zod');
+const { validateRequest } = require('zod-express-middleware');
 
 router.post('/', authmiddleware, async (req, res) => {
   try {
@@ -36,8 +38,15 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/:id', authmiddleware, async (req, res) => {
-  try {
+router.get(
+  '/:id',
+  validateRequest({
+    params: z.object({
+      id: z.string(),
+    }),
+  }),
+  authmiddleware,
+  async (req, res) => {
     const { id } = req.params;
     const { user } = req;
     const task = await Task.findById(id);
@@ -50,10 +59,8 @@ router.get('/:id', authmiddleware, async (req, res) => {
         .json({ message: 'User is not authorized to view this task' });
     }
     res.status(200).json(task);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch task' });
   }
-});
+);
 
 router.delete('/:id', authmiddleware, async (req, res) => {
   try {
@@ -95,6 +102,21 @@ router.put('/:id', authmiddleware, async (req, res) => {
     res.status(200).json({ message: 'Task updated successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to update task' });
+  }
+});
+
+router.get('/search/:taskname', authmiddleware, async (req, res) => {
+  const { taskname } = req.params;
+  const { user } = req;
+
+  try {
+    const tasks = await Task.find({
+      creator: user,
+      taskname: { $regex: taskname, $options: 'i' },
+    });
+    res.status(200).json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch tasks' });
   }
 });
 
