@@ -8,7 +8,7 @@ const { validateRequest } = require('zod-express-middleware');
 
 router.post('/', authmiddleware, async (req, res) => {
   try {
-    const { taskname, priority, checklists } = req.body;
+    const { taskname, priority, checklists, asssignees } = req.body;
     const { user } = req;
     const tasks = checklists.split(',').map((task) => task.trim());
     const task = new Task({
@@ -16,6 +16,7 @@ router.post('/', authmiddleware, async (req, res) => {
       priority,
       checklists: tasks,
       creator: user,
+      assignees: assignees || [],
     });
     await task.save();
     res.status(201).json({ message: 'Task created successfully' });
@@ -84,7 +85,7 @@ router.put('/:id', authmiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { user } = req;
-    const { taskname, priority, checklists } = req.body;
+    const { taskname, priority, checklists, assignees } = req.body;
     const tasks = checklists.split(',').map((task) => task.trim());
     const task = await Task.findById(id);
     if (!task) {
@@ -98,6 +99,7 @@ router.put('/:id', authmiddleware, async (req, res) => {
     task.taskname = taskname;
     task.priority = priority;
     task.checklists = tasks;
+    task.assignees = assignees || [];
     await task.save();
     res.status(200).json({ message: 'Task updated successfully' });
   } catch (error) {

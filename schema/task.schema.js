@@ -24,6 +24,13 @@ const taskSchema = new Schema({
     ref: 'User',
     required: true,
   },
+  assignees: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      default: [],
+    },
+  ],
 });
 
 const Task = mongoose.model('Task', taskSchema);
